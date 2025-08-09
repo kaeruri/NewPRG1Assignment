@@ -109,6 +109,26 @@ def draw_map(game_map, fog, player):
 
 # This function draws the 3x3 viewport
 def draw_view(game_map, fog, player):
+    #Player position coordinates
+    position_x = player['x']
+    position_y = player['y']
+
+    #visible range around player (2 tiles in each direction)
+    visible_range = 1
+
+    #range of visible rows
+    for y in range(position_x-visible_range, position_x+visible_range+1):
+        #range of visible columns
+        for x in range(position_y-visible_range, position_y+visible_range+1):
+            #Ensure coordinates are in map bounds
+            if 0 <= y < len(game_map) and 0 <= x < len(game_map[y]):
+                #Check if the tile is visible (not covered by fog)
+                if not fog[y][x]:
+                    print(game_map[y][x], end="")
+                else:
+                    print("M", end="")
+            else:
+                print("?", end="")
     return
 
 # This function shows the information for the player
