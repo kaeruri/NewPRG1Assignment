@@ -262,7 +262,7 @@ print("  and live happily ever after?")
 print("-----------------------------------------------------------")
 
 # TODO: The game!
-while game_state = 'main'
+while game_state == 'main':
     show_main_menu()
     choice = input("Your choice? ").upper()
     if choice == "N":
@@ -286,7 +286,7 @@ while game_state = 'main'
        game_state = 'main'
 
 
-while game_state = 'town' 
+while game_state == 'town':
    show_town_menu()
    choice_town = input("Your choice? ").upper()
    if choice_town == "B":
