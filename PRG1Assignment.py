@@ -133,6 +133,21 @@ def draw_view(game_map, fog, player):
 
 # This function shows the information for the player
 def show_information(player):
+    print()
+    print("----- Player Information -----")
+    #x-coordinates, y-coordinates
+    print(f"Location: ({player['x']}, {player['y']})")
+    #mined materials
+    print(f"Copper: {player['copper']}")
+    print(f"Silver: {player['silver']}")
+    print(f"Gold: {player['gold']}")
+    #earned money
+    print(f"GP: {player['GP']}")
+    #no. of days
+    print(f"Day: {player['day']}")
+    #turns left
+    print(f"Turns left today: {player['turns']}")
+    print("-------------------------------")
     return
 
 # This function saves the game
