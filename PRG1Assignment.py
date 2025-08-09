@@ -111,22 +111,24 @@ def draw_view(game_map, fog, player):
     position_x = player['x']
     position_y = player['y']
 
-    #visible range around player (2 tiles in each direction)
+    #visible range around player (1 tiles in each direction)
     visible_range = 1
 
     #range of visible rows
-    for y in range(position_x-visible_range, position_x+visible_range+1):
+    for y in range(position_y-visible_range, position_y+visible_range+1):
         #range of visible columns
-        for x in range(position_y-visible_range, position_y+visible_range+1):
+        for x in range(position_x-visible_range, position_x+visible_range+1):
             #Ensure coordinates are in map bounds
             if 0 <= y < len(game_map) and 0 <= x < len(game_map[y]):
-                #Check if the tile is visible (not covered by fog)
-                if not fog[y][x]:
-                    print(game_map[y][x], end="")
+                if x == position_x and y == position_y:
+                    print("M", end="")  #Player
+                elif fog[y][x]:
+                    print("?", end="")  #Fog
                 else:
-                    print("M", end="")
+                    print(game_map[y][x], end="") 
             else:
-                print("?", end="")
+                print(" ", end="") 
+        print()
     return
 
 # This function shows the information for the player
@@ -173,7 +175,7 @@ def show_main_menu():
 
 def show_town_menu():
     print()
-    print(f'Day {player["day"]}')
+    print(f'Day {player["day"]+1}')
     print("----- Sundrop Town -----")
     print("(B)uy stuff")
     print("See Player (I)nformation")
