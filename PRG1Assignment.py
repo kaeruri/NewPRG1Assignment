@@ -100,17 +100,30 @@ def initialize_game(game_map, fog, player):
     
 # This function draws the entire map, covered by the fof
 def draw_map(game_map, fog, player):
-    #rows
-    for y in range(len(game_map)):
-     #columns
-     for x in range(len(game_map[y])):
-         #out of map range
-         if not fog[y][x]:
-             print(game_map[y][x], end="")
-         else:
-             #fog of war
-             print("?", end="")
-     print()
+    if not game_map:
+        return
+
+    height = len(game_map)
+    width = len(game_map[0])
+
+    # Top border
+    print("+" + "-" * width + "+")
+
+    for y in range(height):
+        print("|", end="")
+        for x in range(width):
+            #Overlay player and portal regardless of fog
+            if x == player.get('x', -1) and y == player.get('y', -1):
+                tile = "M"
+            elif x == player.get('portal_x', -9999) and y == player.get('portal_y', -9999):
+                tile = "P"
+            else:
+                #Show real tile only if not fogged, otherwise '?'
+                tile = game_map[y][x] if not fog[y][x] else "?"
+            print(tile, end="")
+        print("|")
+    #Bottom border
+    print("+" + "-" * width + "+")
     return
 
 # This function draws the 3x3 viewport
