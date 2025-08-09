@@ -213,6 +213,9 @@ def load_game(game_map, fog, player):
         game_map.clear()
         for row in data["game_map"]:
             game_map.append(row)
+        global MAP_WIDTH, MAP_HEIGHT
+        MAP_HEIGHT = len(game_map)
+        MAP_WIDTH = len(game_map[0]) if MAP_HEIGHT > 0 else 0
 
         # Restore fog
         fog.clear()
@@ -434,6 +437,7 @@ def move_player(action, game_map, fog, player):
         player['portal_x'], player['portal_y'] = player['x'], player['y']
         exhausted = True
         to_town = True
+    return {"to_town": to_town, "exhausted": exhausted, "stepped_on_town": stepped_on_town}
 
 
 
@@ -503,8 +507,7 @@ while game_state == 'main':
     elif choice == "Q":
        #quit game
        print("Thanks for playing Sundrop Caves!")
-       game_state = 'quit'
-       print("Thanks for playing Sundrop Caves!")
+       break
     else:
        print("Invalid choice. Please choose N, L, H, or Q.")
        game_state = 'main'
@@ -515,14 +518,13 @@ while game_state == 'town':
    choice_town = input("Your choice? ").upper()
    if choice_town == 'B':
        buy_shop(player)                
-   elif choice == 'I':
+   elif choice_town == 'I':
        show_information(player)
-   elif choice == 'M':
+   elif choice_town == 'M':
        draw_map(game_map, fog, player)  
-   elif choice == 'E':
+   elif choice_town == 'E':
        enter_mine(game_map, fog, player) 
-   elif choice == 'V':
+   elif choice_town == 'V':
        save_game(game_map, fog, player)
-   elif choice == 'Q':
+   elif choice_town == 'Q':
        game_state = 'main'
-
