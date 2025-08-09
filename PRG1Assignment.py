@@ -65,12 +65,13 @@ def clear_fog(fog, player):
     return
 
 def initialize_game(game_map, fog, player):
-    # initialize map
-    load_map("level1.txt", game_map)
-
     #name input
     name = input("Greetings, miner! What is your name? ")
     print(f"Pleased to meet you, {name}. Welcome to Sundrop Town!")
+
+    # initialize map
+    load_map("level1.txt", game_map)
+
     #initializes fog for new game
     fog.clear()
     #initial layout and grid for fog
@@ -87,6 +88,13 @@ def initialize_game(game_map, fog, player):
     player['day'] = 0
     player['steps'] = 0
     player['turns'] = TURNS_PER_DAY
+
+    #initialize player
+    player['name'] = name                  #store the name you asked for
+    player['capacity'] = 10                #starting backpack size
+    player['pickaxe_level'] = 1            #1=copper, 2=silver, 3=gold
+    player['portal_x'] = player['x']       #portal at starting position
+    player['portal_y'] = player['y']
 
     clear_fog(fog, player)
     
@@ -141,14 +149,31 @@ def show_information(player):
     print(f"Copper: {player['copper']}")
     print(f"Silver: {player['silver']}")
     print(f"Gold: {player['gold']}")
-    #earned money
-    print(f"GP: {player['GP']}")
     #no. of days
     print(f"Day: {player['day']}")
     #turns left
     print(f"Turns left today: {player['turns']}")
-    print("-------------------------------")
-    return
+    if 'name' in player:
+       print(f"Name: {player['name']}")
+       # portal position
+       px = player.get('portal_x', player['x'])
+       py = player.get('portal_y', player['y'])
+       print(f"Portal position: ({px}, {py})")
+       # pickaxe level label
+       lvl = player.get('pickaxe_level', 1)
+       lvl_name = {1: 'copper', 2: 'silver', 3: 'gold'}.get(lvl, '?')
+       print(f"Pickaxe level: {lvl} ({lvl_name})")
+       print("------------------------------")
+       # load / capacity
+       load = player.get('copper', 0) + player.get('silver', 0) + player.get('gold', 0)
+       cap = player.get('capacity', 10)
+       print(f"Load: {load} / {cap}")
+       print("------------------------------")
+       # GP and steps
+       print(f"GP: {player.get('GP', 0)}")
+       print(f"Steps taken: {player.get('steps', 0)}")
+       print("-------------------------------")
+       return
 
 # This function saves the game
 import json
@@ -300,6 +325,3 @@ while game_state == 'town':
    elif choice_town == "V":
        save_game(game_map, fog, player)
    elif choice_town == "Q":
-
-
-
