@@ -78,7 +78,7 @@ def initialize_game(game_map, fog, player):
     #initial layout and grid for fog
     for row in game_map:
         fog.append([True] * len(row))
-        
+
     #   You will probably add other entries into the player dictionary
     player['x'] = 0
     player['y'] = 0
@@ -94,6 +94,17 @@ def initialize_game(game_map, fog, player):
     
 # This function draws the entire map, covered by the fof
 def draw_map(game_map, fog, player):
+    #rows
+    for y in range(len(game_map)):
+     #columns
+     for x in range(len(game_map[y])):
+         #out of map range
+         if not fog[y][x]:
+             print(game_map[y][x], end="")
+         else:
+             #fog of war
+             print("?", end="")
+     print()
     return
 
 # This function draws the 3x3 viewport
