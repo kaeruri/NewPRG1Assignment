@@ -169,13 +169,13 @@ def show_main_menu():
     print("--- Main Menu ----")
     print("(N)ew game")
     print("(L)oad saved game")
-#    print("(H)igh scores")
+#   print("(H)igh scores")
     print("(Q)uit")
     print("------------------")
 
 def show_town_menu():
     print()
-    # TODO: Show Day
+    print(f'Day {player["day"]}')
     print("----- Sundrop Town -----")
     print("(B)uy stuff")
     print("See Player (I)nformation")
