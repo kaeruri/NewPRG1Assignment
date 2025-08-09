@@ -151,10 +151,17 @@ def show_information(player):
     return
 
 # This function saves the game
+import json
 def save_game(game_map, fog, player):
-    # save map
-    # save fog
-    # save player
+    data = {"game_map": game_map,
+        "fog": fog,
+        "player": player}
+    try:
+        with open('gameprogress.json', "w") as f:
+            json.dump(data, f)
+        print("Game saved.")
+    except Exception as e:
+        print(f"Save failed: {e}")
     return
         
 # This function loads the game
