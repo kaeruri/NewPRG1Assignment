@@ -68,9 +68,17 @@ def initialize_game(game_map, fog, player):
     # initialize map
     load_map("level1.txt", game_map)
 
-    # TODO: initialize fog
-    
-    # TODO: initialize player
+    #name input
+    name = input("Greetings, miner! What is your name? ")
+    print(f"Pleased to meet you, {name}. Welcome to Sundrop Town!")
+    #initialize map
+    load_map("level1.txt", game_map)
+    #initializes fog for new game
+    fog.clear()
+    #initial layout and grid for fog
+    for row in game_map:
+        fog.append([True] * len(row))
+        
     #   You will probably add other entries into the player dictionary
     player['x'] = 0
     player['y'] = 0
