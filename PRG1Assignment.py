@@ -24,7 +24,7 @@ prices['gold'] = (10, 18)
 def load_map(filename, map_struct):
     #insert path to map file
     path = 'C:\\Users\\HomePC\\OneDrive\\Documents\\PRG1Assignment\\'
-    map_file = open(filename, 'r')
+    map_file = open(path +filename, 'r')
 
     #sets changes to be effective globally (throughout program)
     global MAP_WIDTH
@@ -71,8 +71,6 @@ def initialize_game(game_map, fog, player):
     #name input
     name = input("Greetings, miner! What is your name? ")
     print(f"Pleased to meet you, {name}. Welcome to Sundrop Town!")
-    #initialize map
-    load_map("level1.txt", game_map)
     #initializes fog for new game
     fog.clear()
     #initial layout and grid for fog
