@@ -165,10 +165,32 @@ def save_game(game_map, fog, player):
     return
         
 # This function loads the game
+import json
 def load_game(game_map, fog, player):
-    # load map
-    # load fog
-    # load player
+    try:
+        with open('gameprogress.json', "r") as f:
+            data = json.load(f)
+
+        # Restore game_map
+        game_map.clear()
+        for row in data["game_map"]:
+            game_map.append(row)
+
+        # Restore fog
+        fog.clear()
+        for row in data["fog"]:
+            fog.append(row)
+
+        # Restore player dictionary
+        player.clear()
+        for key, value in data["player"].items():
+            player[key] = value
+
+        print("Game loaded.")
+    except FileNotFoundError:
+        print("No saved game found.")
+    except Exception as e:
+        print(f"Load failed: {e}")
     return
 
 def show_main_menu():
