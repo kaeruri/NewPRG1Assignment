@@ -198,7 +198,7 @@ def show_main_menu():
     print("--- Main Menu ----")
     print("(N)ew game")
     print("(L)oad saved game")
-#   print("(H)igh scores")
+    print("(H)igh scores")
     print("(Q)uit")
     print("------------------")
 
@@ -213,6 +213,42 @@ def show_town_menu():
     print("Sa(V)e game")
     print("(Q)uit to main menu")
     print("------------------------")
+
+
+
+def buy_shop(player):
+    while True:
+        print()
+        print("---------------------- Shop Menu ----------------------")
+        upgrade_cost = player['capacity'] * 2     # price = 2 × current capacity
+        print(f"(B)ackpack upgrade to carry {player['capacity'] + 2} items for {upgrade_cost} GP")
+        # If you need pickaxe later, uncomment this line:
+        # print("(P)ickaxe upgrade to Level 2 to mine silver ore for 50 GP")
+        print("(L)eave shop")
+        print("-------------------------------------------------------")
+        print(f"GP: {player['GP']}")
+        print("-------------------------------------------------------")
+
+        choice = input("Your choice? ").strip().lower()
+
+        if choice == 'b':
+            if player['GP'] >= upgrade_cost:
+                player['GP'] -= upgrade_cost
+                player['capacity'] += 2
+                print(f"Congratulations! You can now carry {player['capacity']} items!")
+            else:
+                print("You don't have enough GP to upgrade your backpack.")
+        elif choice == 'p':   # (optional) pickaxe upgrade handling
+            if player['pickaxe_level'] == 1 and player['GP'] >= 50:
+               player['GP'] -= 50
+               player['pickaxe_level'] = 2
+               print("Your pickaxe is now Level 2! You can mine silver.")
+            else:
+               print("Cannot upgrade pickaxe (not enough GP or already upgraded).")
+        elif choice == 'l':
+            break
+        else:
+            print("Invalid choice. Please choose again.")
             
 
 #--------------------------- MAIN GAME ---------------------------
@@ -226,3 +262,44 @@ print("  and live happily ever after?")
 print("-----------------------------------------------------------")
 
 # TODO: The game!
+while game_state = 'main'
+    show_main_menu()
+    choice = input("Your choice? ").upper()
+    if choice == "N":
+       #start new game
+       initialize_game(game_map,fog,player)
+       game_state = 'town'
+    elif choice == "L":
+       #load saved game
+       load_game(game_map, fog, player)
+       game_state = 'town'
+    elif choice == "H":
+       #display high scores
+       print("High scores feature not implemented yet.")
+    elif choice == "Q":
+       #quit game
+       print("Thanks for playing Sundrop Caves!")
+       game_state = 'quit'
+       print("Thanks for playing Sundrop Caves!")
+    else:
+       print("Invalid choice. Please choose N, L, H, or Q.")
+       game_state = 'main'
+
+
+while game_state = 'town' 
+   show_town_menu()
+   choice_town = input("Your choice? ").upper()
+   if choice_town == "B":
+       buy_shop(player)
+   elif choice_town == "I":
+       show_information(player)
+   elif choice_town == "M":
+       draw_map(game_map, fog, player)
+   elif choice_town == "E":
+       enter_mine(game_map, fog, player)
+   elif choice_town == "V":
+       save_game(game_map, fog, player)
+   elif choice_town == "Q":
+
+
+
