@@ -22,15 +22,28 @@ prices['gold'] = (10, 18)
 # This function loads a map structure (a nested list) from a file
 # It also updates MAP_WIDTH and MAP_HEIGHT
 def load_map(filename, map_struct):
+    #insert path to map file
+    path = 'C:\\Users\\HomePC\\OneDrive\\Documents\\PRG1Assignment\\'
     map_file = open(filename, 'r')
+
+    #sets changes to be effective globally (throughout program)
     global MAP_WIDTH
     global MAP_HEIGHT
     
+    #deletes previous map structure
     map_struct.clear()
     
-    # TODO: Add your map loading code here
-    
+    for line in map_file:
+        line = line.strip()
+        #Defines lines as lists (becomes lists in a list)
+        row = list(line)
+        #Appends each line into the map structure
+        map_struct.append(row)
+
+    #Map width and height updated according to items in map_struct
+    #with reference to first row/list
     MAP_WIDTH = len(map_struct[0])
+    #with reference to number of rows/lists
     MAP_HEIGHT = len(map_struct)
 
     map_file.close()
