@@ -62,20 +62,6 @@ def clear_fog(fog, player):
             if 0 <= row < len(fog) and 0 <= column < len(fog[row]):
                 #Clear fog when player moves
                 fog[row][column] = False
-
-
-
-
-    #name input
-    name = input("Greetings, miner! What is your name? ")
-    print(f"Pleased to meet you, {name}. Welcome to Sundrop Town!")
-    #initialize map
-    load_map("level1.txt", game_map)
-    #initializes fog for new game
-    fog.clear()
-    #initial layout and grid for fog
-    for row in game_map:
-        fog.append([True] * len(row))
     return
 
 def initialize_game(game_map, fog, player):
