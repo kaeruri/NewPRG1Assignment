@@ -287,6 +287,192 @@ def buy_shop(player):
             break
         else:
             print("Invalid choice. Please choose again.")
+
+
+
+def current_load(player):
+    """Return the current number of ores carried."""
+    return player.get('copper', 0) + player.get('silver', 0) + player.get('gold', 0)
+
+def capacity_left(player):
+    return player.get('capacity', 10) - current_load(player)
+
+def can_mine(tile, player):
+    """Pickaxe gate: C=1, S=2, G=3."""
+    req = {'C':1, 'S':2, 'G':3}
+    return tile in req and player.get('pickaxe_level',1) >= req[tile]
+
+def print_mine_screen(game_map, fog, player):
+    """Show the mine viewport and HUD similar to screenshots."""
+    print("----------------------------------------------------------")
+    print(f"                          DAY {player['day'] + 1}")
+    print("----------------------------------------------------------")
+    print(f"DAY {player['day'] + 1}")
+    print("+---+")
+    draw_view(game_map, fog, player)  # your existing 3×3 function
+    print("+---+")
+    print(f"Turns left: {player['turns']:2}    Load: {current_load(player)} / {player['capacity']}    Steps: {player['steps']}")
+    print("(WASD) to move")
+    print("(M)ap, (I)nformation, (P)ortal, (Q)uit to main menu")
+
+def sell_all_ore(player):
+    """
+    Sell all ores using the assignment's random price ranges:
+      copper: 1–3, silver: 5–8, gold: 10–18 (per piece)
+    """
+    price_c = randint(*prices['copper'])
+    price_s = randint(*prices['silver'])
+    price_g = randint(*prices['gold'])
+
+    c = player.get('copper', 0)
+    s = player.get('silver', 0)
+    g = player.get('gold', 0)
+
+    total_earn = 0
+
+    if c > 0:
+        earn = c * price_c
+        print(f"You sell {c} copper ore for {earn} GP.")
+        total_earn += earn
+        player['copper'] = 0
+
+    if s > 0:
+        earn = s * price_s
+        print(f"You sell {s} silver ore for {earn} GP.")
+        total_earn += earn
+        player['silver'] = 0
+
+    if g > 0:
+        earn = g * price_g
+        print(f"You sell {g} gold ore for {earn} GP.")
+        total_earn += earn
+        player['gold'] = 0
+
+    player['GP'] = player.get('GP', 0) + total_earn
+    print(f"You now have {player['GP']} GP!")
+
+def arrive_in_town_from_mine(game_map, fog, player):
+    """
+    Handle returning to town:
+      - sell all ore
+      - advance to next day
+      - reset turns
+      - move player to town tile (0,0)
+    """
+    sell_all_ore(player)
+    player['day'] += 1
+    player['turns'] = TURNS_PER_DAY
+    player['x'], player['y'] = 0, 0
+    clear_fog(fog, player)
+
+
+def move_player(action, game_map, fog, player):
+    """Handle WASD, mining, turns/steps, and return a status dict."""
+    dx = dy = 0
+    if action == 'W': dy = -1
+    elif action == 'S': dy = 1
+    elif action == 'A': dx = -1
+    elif action == 'D': dx = 1
+    else:
+        return {"to_town": False, "exhausted": False, "stepped_on_town": False}
+
+    nx = player['x'] + dx
+    ny = player['y'] + dy
+
+    to_town = False
+    exhausted = False
+    stepped_on_town = False
+
+    def consume_time():
+        player['steps'] += 1
+        if player['turns'] > 0:
+            player['turns'] -= 1
+
+    # off-map (still costs a turn)
+    if not (0 <= ny < len(game_map) and 0 <= nx < len(game_map[ny])):
+        print("You can't go there.")
+        consume_time()
+    else:
+        tile = game_map[ny][nx]
+
+        # full pack + mineral destination -> block
+        if tile in ('C','S','G') and capacity_left(player) <= 0:
+            print("You can't carry any more, so you can't go that way.")
+            consume_time()
+        else:
+            # move
+            player['x'], player['y'] = nx, ny
+            clear_fog(fog, player)
+
+            # mine (if allowed by pickaxe)
+            if tile in ('C','S','G') and can_mine(tile, player):
+                if tile == 'C': want = randint(1,5); ore = 'copper'
+                elif tile == 'S': want = randint(1,3); ore = 'silver'
+                else:             want = randint(1,2); ore = 'gold'
+
+                left = max(0, capacity_left(player))
+                take = min(want, left)
+                if take > 0:
+                    player[ore] += take
+                    print("------------------------------------------------")
+                    print(f"You mined {take} piece(s) of {ore}.")
+                    if take < want:
+                        print(f"...but you can only carry {take} more piece(s)!")
+
+            # stepped on T?
+            if tile == 'T':
+                print("You return to town.")
+                to_town = True
+                stepped_on_town = True
+
+            consume_time()
+
+    # exhausted auto-portal
+    if player['turns'] == 0 and not to_town:
+        print("You are exhausted.")
+        print("You place your portal stone here and zap back to town.")
+        player['portal_x'], player['portal_y'] = player['x'], player['y']
+        exhausted = True
+        to_town = True
+
+
+
+def enter_mine(game_map, fog, player):
+    # appear at portal if set, else town (0,0)
+    start_x = player.get('portal_x', 0)
+    start_y = player.get('portal_y', 0)
+    player['x'], player['y'] = start_x, start_y
+    clear_fog(fog, player)
+
+    while True:
+        print_mine_screen(game_map, fog, player)
+        action = input("Action? ").strip().upper()
+
+        if action in ('W','A','S','D'):
+            status = move_player(action, game_map, fog, player)
+            if status["to_town"]:
+                arrive_in_town_from_mine(game_map, fog, player)
+                return  # back to town
+
+        elif action == 'M':
+            draw_map(game_map, fog, player)
+
+        elif action == 'I':
+            show_information(player)
+
+        elif action == 'P':
+            print("----------------------------------------------------------")
+            print("You place your portal stone here and zap back to town.")
+            player['portal_x'], player['portal_y'] = player['x'], player['y']
+            arrive_in_town_from_mine(game_map, fog, player)
+            return
+
+        elif action == 'Q':
+            # quit mine to main menu (as per your menu spec)
+            return
+
+        else:
+            print("Invalid action.")
             
 
 #--------------------------- MAIN GAME ---------------------------
@@ -327,14 +513,16 @@ while game_state == 'main':
 while game_state == 'town':
    show_town_menu()
    choice_town = input("Your choice? ").upper()
-   if choice_town == "B":
-       buy_shop(player)
-   elif choice_town == "I":
+   if choice_town == 'B':
+       buy_shop(player)                
+   elif choice == 'I':
        show_information(player)
-   elif choice_town == "M":
-       draw_map(game_map, fog, player)
-   elif choice_town == "E":
-       enter_mine(game_map, fog, player)
-   elif choice_town == "V":
+   elif choice == 'M':
+       draw_map(game_map, fog, player)  
+   elif choice == 'E':
+       enter_mine(game_map, fog, player) 
+   elif choice == 'V':
        save_game(game_map, fog, player)
-   elif choice_town == "Q":
+   elif choice == 'Q':
+       game_state = 'main'
+
