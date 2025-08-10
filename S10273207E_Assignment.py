@@ -1,6 +1,6 @@
-#Program by: Likaelle Chua Ying Zhi Student ID:S10273207E
-#PRG1 Assignment
-#Game: Sundrop Caves
+'''Program by: Likaelle Chua Ying Zhi Student ID:S10273207E
+PRG1 Assignment
+Game: Sundrop Caves'''
 from random import randint
 
 player = {}
@@ -103,30 +103,44 @@ def initialize_game(game_map, fog, player):
     
 # This function draws the entire map, covered by the fof
 def draw_map(game_map, fog, player):
+    #empty map
     if not game_map:
         return
 
     height = len(game_map)
-    width = len(game_map[0])
+    #rows may be different lengths; use the max width
+    max_w = max(len(r) for r in game_map)
 
-    # Top border
-    print("+" + "-" * width + "+")
+    #Top border
+    print("+" + "-" * max_w + "+")
 
     for y in range(height):
         print("|", end="")
-        for x in range(width):
+        row = game_map[y]
+        fog_row = fog[y] if y < len(fog) else []
+
+        for x in range(max_w):
             #Overlay player and portal regardless of fog
             if x == player.get('x', -1) and y == player.get('y', -1):
-                tile = "M"
+                ch = "M"
             elif x == player.get('portal_x', -9999) and y == player.get('portal_y', -9999):
-                tile = "P"
+                ch = "P"
             else:
-                #Show real tile only if not fogged, otherwise '?'
-                tile = game_map[y][x] if not fog[y][x] else "?"
-            print(tile, end="")
+                #If this row is shorter than max_w, print blank there
+                if x >= len(row):
+                    ch = " "
+                else:
+                    #Determine if this cell is fogged
+                    covered = True
+                    if y < len(fog) and x < len(fog_row):
+                        covered = fog_row[x]
+                    #Reveal actual tile only if not fogged
+                    ch = row[x] if not covered else "?"
+            print(ch, end="")
         print("|")
+
     #Bottom border
-    print("+" + "-" * width + "+")
+    print("+" + "-" * max_w + "+")
     return
 
 # This function draws the 3x3 viewport
@@ -241,7 +255,7 @@ def load_game(game_map, fog, player):
 #Highscores
 SCORES_FILE = "highscores.json"
 
-def _load_scores():
+def load_scores():
     try:
         with open(SCORES_FILE, "r") as f:
             data = json.load(f)
@@ -252,33 +266,33 @@ def _load_scores():
     except Exception:
         return []
 
-def _save_scores(scores):
+def save_scores(scores):
     try:
         with open(SCORES_FILE, "w") as f:
             json.dump(scores, f)
     except Exception as e:
         print(f"Could not save scores: {e}")
 
-def _score_key(s):
-    # sort by fewer days, then fewer steps, then HIGHER GP
+def score_key(s):
+    #sort by fewer days, then fewer steps, then HIGHER GP
     return (s.get("days", 999999), s.get("steps", 999999), -s.get("gp", 0))
 
 def record_high_score(player):
     """Call this right AFTER a win is detected."""
     entry = {
         "name": player.get("name", "miner"),
-        "days": player.get("day", 0),      # day count AFTER selling (your code already increments)
+        "days": player.get("day", 0),      #day count after selling (code already increments)
         "steps": player.get("steps", 0),
         "gp": player.get("GP", 0)
     }
-    scores = _load_scores()
+    scores = load_scores()
     scores.append(entry)
-    scores.sort(key=_score_key)
-    scores = scores[:5]  # keep top 5
-    _save_scores(scores)
+    scores.sort(key = score_key)
+    scores = scores[:5]  #keep top 5
+    save_scores(scores)
 
 def show_high_scores():
-    scores = _load_scores()
+    scores = load_scores()
     print()
     print("----- Top Scores -----")
     if not scores:
