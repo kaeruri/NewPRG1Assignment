@@ -571,43 +571,38 @@ print("  and live happily ever after?")
 print("-----------------------------------------------------------")
 
 # TODO: The game!
-while game_state == 'main':
-    show_main_menu()
-    choice = input("Your choice? ").upper()
-    if choice == "N":
-       #start new game
-       initialize_game(game_map,fog,player)
-       game_state = 'town'
-    elif choice == "L":
-       #load saved game
-       load_game(game_map, fog, player)
-       game_state = 'town'
-    elif choice == "H":
-       #display high scores
-       show_high_scores()
-    elif choice == "Q":
-       #quit game
-       print("Thanks for playing Sundrop Caves!")
-       break
-    else:
-       print("Invalid choice. Please choose N, L, H, or Q.")
-       game_state = 'main'
+while True:
+    if game_state == 'main':
+        show_main_menu()
+        choice = input("Your choice? ").upper()
+        if choice == "N":
+            initialize_game(game_map, fog, player)
+            game_state = 'town'
+        elif choice == "L":
+            load_game(game_map, fog, player)
+            game_state = 'town'
+        elif choice == "H":
+            show_high_scores()
+        elif choice == "Q":
+            print("Thanks for playing Sundrop Caves!")
+            break
+        else:
+            print("Invalid choice. Please choose N, L, H, or Q.")
 
-
-while game_state == 'town':
-   show_town_menu()
-   choice_town = input("Your choice? ").upper()
-   if choice_town == 'B':
-       buy_shop(player)                
-   elif choice_town == 'I':
-       show_information(player)
-   elif choice_town == 'M':
-       draw_map(game_map, fog, player)  
-   elif choice_town == 'E':
-       enter_mine(game_map, fog, player)
-       if game_state == 'main':   #player won
-          break 
-   elif choice_town == 'V':
-       save_game(game_map, fog, player)
-   elif choice_town == 'Q':
-       game_state = 'main'
+    elif game_state == 'town':
+        show_town_menu()
+        choice_town = input("Your choice? ").upper()
+        if choice_town == 'B':
+            buy_shop(player)
+        elif choice_town == 'I':
+            show_information(player)
+        elif choice_town == 'M':
+            draw_map(game_map, fog, player)
+        elif choice_town == 'E':
+            enter_mine(game_map, fog, player)   
+        elif choice_town == 'V':
+            save_game(game_map, fog, player)
+        elif choice_town == 'Q':
+            game_state = 'main'
+        else:
+            print("Invalid choice. Please choose B, I, M, E, V or Q.")
