@@ -356,14 +356,22 @@ def sell_all_ore(player):
 def arrive_in_town_from_mine(game_map, fog, player):
     """
     Handle returning to town:
-      - sell all ore
+      - sell all ore (prints each line + 'You now have ... GP!')
       - advance to next day
       - reset turns
+      - check win and bounce to main if >= WIN_GP
       - move player to town tile (0,0)
     """
-    sell_all_ore(player)
-    player['day'] += 1
+    sell_all_ore(player)                 #prints sale lines + balance line
+    player['day'] += 1                  
     player['turns'] = TURNS_PER_DAY
+
+    #WIN check (do it right after starting the new day)
+    if check_win_and_go_main(player):
+        # we already set game_state = 'main' above
+        return
+
+    #back to town position & reveal
     player['x'], player['y'] = 0, 0
     clear_fog(fog, player)
 
@@ -476,6 +484,24 @@ def enter_mine(game_map, fog, player):
 
         else:
             print("Invalid action.")
+
+
+def check_win_and_go_main(player):
+    """
+    If player has enough GP after selling, print the win message exactly
+    like the spec and send them back to the main menu.
+    """
+    if player.get('GP', 0) >= WIN_GP:  # WIN_GP = 500 in your file
+        print("----------------------------------------------------------")
+        print(f"Woo-hoo! Well done, {player.get('name','miner')}, you have {player['GP']} GP!")
+        print("You now have enough to retire and play video games every day.")
+        print(f"And it only took you {player['day']} days and {player['steps']} steps! You win!")
+        print("----------------------------------------------------------")
+        # jump to main menu
+        global game_state
+        game_state = 'main'
+        return True
+    return False
             
 
 #--------------------------- MAIN GAME ---------------------------
@@ -522,7 +548,9 @@ while game_state == 'town':
    elif choice_town == 'M':
        draw_map(game_map, fog, player)  
    elif choice_town == 'E':
-       enter_mine(game_map, fog, player) 
+       enter_mine(game_map, fog, player)
+       if game_state == 'main':   #player won
+          break 
    elif choice_town == 'V':
        save_game(game_map, fog, player)
    elif choice_town == 'Q':
