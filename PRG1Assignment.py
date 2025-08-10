@@ -1,3 +1,6 @@
+#Program by: Likaelle Chua Ying Zhi Student ID:S10273207E
+#PRG1 Assignment
+#Game: Sundrop Caves
 from random import randint
 
 player = {}
