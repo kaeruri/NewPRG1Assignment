@@ -319,9 +319,15 @@ def buy_shop(player):
     while True:
         print()
         print("---------------------- Shop Menu ----------------------")
-        upgrade_cost = player['capacity'] * 2     #price = 2 × current capacity
+        upgrade_cost = player['capacity'] * 2
         print(f"(B)ackpack upgrade to carry {player['capacity'] + 2} items for {upgrade_cost} GP")
-        print("(P)ickaxe upgrade to Level 2 to mine silver ore for 50 GP")
+
+        # show only the next valid pickaxe upgrade
+        if player['pickaxe_level'] == 1:
+            print("(P)ickaxe upgrade to Level 2 to mine silver ore for 50 GP")
+        elif player['pickaxe_level'] == 2:
+            print("(P)ickaxe upgrade to Level 3 to mine gold ore for 150 GP")
+
         print("(L)eave shop")
         print("-------------------------------------------------------")
         print(f"GP: {player['GP']}")
@@ -336,13 +342,19 @@ def buy_shop(player):
                 print(f"Congratulations! You can now carry {player['capacity']} items!")
             else:
                 print("You don't have enough GP to upgrade your backpack.")
-        elif choice == 'p':   #pickaxe upgrade handling
+
+        elif choice == 'p':
             if player['pickaxe_level'] == 1 and player['GP'] >= 50:
-               player['GP'] -= 50
-               player['pickaxe_level'] = 2
-               print("Your pickaxe is now Level 2! You can mine silver.")
+                player['GP'] -= 50
+                player['pickaxe_level'] = 2
+                print("Congratulations! You can now mine silver!")
+            elif player['pickaxe_level'] == 2 and player['GP'] >= 150:
+                player['GP'] -= 150
+                player['pickaxe_level'] = 3
+                print("Congratulations! You can now mine gold!")
             else:
-               print("Cannot upgrade pickaxe (not enough GP or already upgraded).")
+                print("Cannot upgrade pickaxe (not enough GP or already max level).")
+
         elif choice == 'l':
             break
         else:
