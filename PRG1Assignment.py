@@ -234,6 +234,61 @@ def load_game(game_map, fog, player):
         print(f"Load failed: {e}")
     return
 
+
+#Highscores
+SCORES_FILE = "highscores.json"
+
+def _load_scores():
+    try:
+        with open(SCORES_FILE, "r") as f:
+            data = json.load(f)
+            # old files or bad data guard
+            return data if isinstance(data, list) else []
+    except FileNotFoundError:
+        return []
+    except Exception:
+        return []
+
+def _save_scores(scores):
+    try:
+        with open(SCORES_FILE, "w") as f:
+            json.dump(scores, f)
+    except Exception as e:
+        print(f"Could not save scores: {e}")
+
+def _score_key(s):
+    # sort by fewer days, then fewer steps, then HIGHER GP
+    return (s.get("days", 999999), s.get("steps", 999999), -s.get("gp", 0))
+
+def record_high_score(player):
+    """Call this right AFTER a win is detected."""
+    entry = {
+        "name": player.get("name", "miner"),
+        "days": player.get("day", 0),      # day count AFTER selling (your code already increments)
+        "steps": player.get("steps", 0),
+        "gp": player.get("GP", 0)
+    }
+    scores = _load_scores()
+    scores.append(entry)
+    scores.sort(key=_score_key)
+    scores = scores[:5]  # keep top 5
+    _save_scores(scores)
+
+def show_high_scores():
+    scores = _load_scores()
+    print()
+    print("----- Top Scores -----")
+    if not scores:
+        print("No scores yet. Win a game to create one!")
+        print("----------------------")
+        return
+    # header
+    print("Rank  Name                Days   Steps   GP")
+    print("--------------------------------------------")
+    for i, s in enumerate(scores, start=1):
+        print(f"{i:>4}  {s.get('name','miner'):<18} {s.get('days',0):>4}   {s.get('steps',0):>5}   {s.get('gp',0):>4}")
+    print("--------------------------------------------")
+
 def show_main_menu():
     print()
     print("--- Main Menu ----")
@@ -487,17 +542,15 @@ def enter_mine(game_map, fog, player):
 
 
 def check_win_and_go_main(player):
-    """
-    If player has enough GP after selling, print the win message exactly
-    like the spec and send them back to the main menu.
-    """
-    if player.get('GP', 0) >= WIN_GP:  # WIN_GP = 500 in your file
+    if player.get('GP', 0) >= WIN_GP:
         print("----------------------------------------------------------")
         print(f"Woo-hoo! Well done, {player.get('name','miner')}, you have {player['GP']} GP!")
         print("You now have enough to retire and play video games every day.")
         print(f"And it only took you {player['day']} days and {player['steps']} steps! You win!")
         print("----------------------------------------------------------")
-        # jump to main menu
+        #record your run in highscores
+        record_high_score(player) 
+        #jump to main menu
         global game_state
         game_state = 'main'
         return True
@@ -528,7 +581,7 @@ while game_state == 'main':
        game_state = 'town'
     elif choice == "H":
        #display high scores
-       print("High scores feature not implemented yet.")
+       show_high_scores()
     elif choice == "Q":
        #quit game
        print("Thanks for playing Sundrop Caves!")
