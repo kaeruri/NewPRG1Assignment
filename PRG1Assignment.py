@@ -209,7 +209,7 @@ def load_game(game_map, fog, player):
         with open('gameprogress.json', "r") as f:
             data = json.load(f)
 
-        # Restore game_map
+        #Restore game_map
         game_map.clear()
         for row in data["game_map"]:
             game_map.append(row)
@@ -217,12 +217,12 @@ def load_game(game_map, fog, player):
         MAP_HEIGHT = len(game_map)
         MAP_WIDTH = len(game_map[0]) if MAP_HEIGHT > 0 else 0
 
-        # Restore fog
+        #Restore fog
         fog.clear()
         for row in data["fog"]:
             fog.append(row)
 
-        # Restore player dictionary
+        #Restore player dictionary
         player.clear()
         for key, value in data["player"].items():
             player[key] = value
@@ -261,10 +261,9 @@ def buy_shop(player):
     while True:
         print()
         print("---------------------- Shop Menu ----------------------")
-        upgrade_cost = player['capacity'] * 2     # price = 2 × current capacity
+        upgrade_cost = player['capacity'] * 2     #price = 2 × current capacity
         print(f"(B)ackpack upgrade to carry {player['capacity'] + 2} items for {upgrade_cost} GP")
-        # If you need pickaxe later, uncomment this line:
-        # print("(P)ickaxe upgrade to Level 2 to mine silver ore for 50 GP")
+        print("(P)ickaxe upgrade to Level 2 to mine silver ore for 50 GP")
         print("(L)eave shop")
         print("-------------------------------------------------------")
         print(f"GP: {player['GP']}")
@@ -279,7 +278,7 @@ def buy_shop(player):
                 print(f"Congratulations! You can now carry {player['capacity']} items!")
             else:
                 print("You don't have enough GP to upgrade your backpack.")
-        elif choice == 'p':   # (optional) pickaxe upgrade handling
+        elif choice == 'p':   #pickaxe upgrade handling
             if player['pickaxe_level'] == 1 and player['GP'] >= 50:
                player['GP'] -= 50
                player['pickaxe_level'] = 2
@@ -312,7 +311,7 @@ def print_mine_screen(game_map, fog, player):
     print("----------------------------------------------------------")
     print(f"DAY {player['day'] + 1}")
     print("+---+")
-    draw_view(game_map, fog, player)  # your existing 3×3 function
+    draw_view(game_map, fog, player)  #existing 3×3 function
     print("+---+")
     print(f"Turns left: {player['turns']:2}    Load: {current_load(player)} / {player['capacity']}    Steps: {player['steps']}")
     print("(WASD) to move")
@@ -391,23 +390,23 @@ def move_player(action, game_map, fog, player):
         if player['turns'] > 0:
             player['turns'] -= 1
 
-    # off-map (still costs a turn)
+    #off-map (still costs a turn)
     if not (0 <= ny < len(game_map) and 0 <= nx < len(game_map[ny])):
         print("You can't go there.")
         consume_time()
     else:
         tile = game_map[ny][nx]
 
-        # full pack + mineral destination -> block
+        #full pack + mineral destination -> block
         if tile in ('C','S','G') and capacity_left(player) <= 0:
             print("You can't carry any more, so you can't go that way.")
             consume_time()
         else:
-            # move
+            #move
             player['x'], player['y'] = nx, ny
             clear_fog(fog, player)
 
-            # mine (if allowed by pickaxe)
+            #mine (if allowed by pickaxe)
             if tile in ('C','S','G') and can_mine(tile, player):
                 if tile == 'C': want = randint(1,5); ore = 'copper'
                 elif tile == 'S': want = randint(1,3); ore = 'silver'
@@ -422,7 +421,7 @@ def move_player(action, game_map, fog, player):
                     if take < want:
                         print(f"...but you can only carry {take} more piece(s)!")
 
-            # stepped on T?
+            #stepped on T?
             if tile == 'T':
                 print("You return to town.")
                 to_town = True
@@ -430,7 +429,7 @@ def move_player(action, game_map, fog, player):
 
             consume_time()
 
-    # exhausted auto-portal
+    #exhausted auto-portal
     if player['turns'] == 0 and not to_town:
         print("You are exhausted.")
         print("You place your portal stone here and zap back to town.")
@@ -442,7 +441,7 @@ def move_player(action, game_map, fog, player):
 
 
 def enter_mine(game_map, fog, player):
-    # appear at portal if set, else town (0,0)
+    #appear at portal if set, else town (0,0)
     start_x = player.get('portal_x', 0)
     start_y = player.get('portal_y', 0)
     player['x'], player['y'] = start_x, start_y
@@ -456,7 +455,7 @@ def enter_mine(game_map, fog, player):
             status = move_player(action, game_map, fog, player)
             if status["to_town"]:
                 arrive_in_town_from_mine(game_map, fog, player)
-                return  # back to town
+                return  #back to town
 
         elif action == 'M':
             draw_map(game_map, fog, player)
@@ -472,7 +471,7 @@ def enter_mine(game_map, fog, player):
             return
 
         elif action == 'Q':
-            # quit mine to main menu (as per your menu spec)
+            #quit mine to main menu 
             return
 
         else:
