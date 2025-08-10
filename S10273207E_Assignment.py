@@ -103,45 +103,35 @@ def initialize_game(game_map, fog, player):
     
 # This function draws the entire map, covered by the fof
 def draw_map(game_map, fog, player):
-    #empty map
     if not game_map:
+        print("(map is empty)")
         return
 
     height = len(game_map)
-    #rows may be different lengths; use the max width
-    max_w = max(len(r) for r in game_map)
+    max_w = max(len(r) for r in game_map)  #rows can be different lengths
 
-    #Top border
     print("+" + "-" * max_w + "+")
-
     for y in range(height):
         print("|", end="")
         row = game_map[y]
         fog_row = fog[y] if y < len(fog) else []
-
         for x in range(max_w):
-            #Overlay player and portal regardless of fog
+            #overlays first
             if x == player.get('x', -1) and y == player.get('y', -1):
                 ch = "M"
             elif x == player.get('portal_x', -9999) and y == player.get('portal_y', -9999):
                 ch = "P"
             else:
-                #If this row is shorter than max_w, print blank there
                 if x >= len(row):
-                    ch = " "
+                    ch = "?"  #short line padding
                 else:
-                    #Determine if this cell is fogged
                     covered = True
                     if y < len(fog) and x < len(fog_row):
                         covered = fog_row[x]
-                    #Reveal actual tile only if not fogged
                     ch = row[x] if not covered else "?"
             print(ch, end="")
         print("|")
-
-    #Bottom border
     print("+" + "-" * max_w + "+")
-    return
 
 # This function draws the 3x3 viewport
 def draw_view(game_map, fog, player):
@@ -173,37 +163,19 @@ def draw_view(game_map, fog, player):
 def show_information(player):
     print()
     print("----- Player Information -----")
-    #x-coordinates, y-coordinates
-    print(f"Location: ({player['x']}, {player['y']})")
-    #mined materials
-    print(f"Copper: {player['copper']}")
-    print(f"Silver: {player['silver']}")
-    print(f"Gold: {player['gold']}")
-    #no. of days
-    print(f"Day: {player['day']}")
-    #turns left
-    print(f"Turns left today: {player['turns']}")
-    if 'name' in player:
-       print(f"Name: {player['name']}")
-       # portal position
-       px = player.get('portal_x', player['x'])
-       py = player.get('portal_y', player['y'])
-       print(f"Portal position: ({px}, {py})")
-       # pickaxe level label
-       lvl = player.get('pickaxe_level', 1)
-       lvl_name = {1: 'copper', 2: 'silver', 3: 'gold'}.get(lvl, '?')
-       print(f"Pickaxe level: {lvl} ({lvl_name})")
-       print("------------------------------")
-       # load / capacity
-       load = player.get('copper', 0) + player.get('silver', 0) + player.get('gold', 0)
-       cap = player.get('capacity', 10)
-       print(f"Load: {load} / {cap}")
-       print("------------------------------")
-       # GP and steps
-       print(f"GP: {player.get('GP', 0)}")
-       print(f"Steps taken: {player.get('steps', 0)}")
-       print("-------------------------------")
-       return
+    print(f"Name: {player.get('name','Unknown')}")
+    print(f"Portal position: ({player.get('portal_x',0)}, {player.get('portal_y',0)})")
+    lvl = player.get('pickaxe_level', 1)
+    lvl_name = {1:'copper',2:'silver',3:'gold'}.get(lvl,'?')
+    print(f"Pickaxe level: {lvl} ({lvl_name})")
+    print("------------------------------")
+    load_amt = player.get('copper',0)+player.get('silver',0)+player.get('gold',0)
+    cap = player.get('capacity',10)
+    print(f"Load: {load_amt} / {cap}")
+    print("------------------------------")
+    print(f"GP: {player.get('GP',0)}")
+    print(f"Steps taken: {player.get('steps',0)}")
+    print("-------------------------------")
 
 # This function saves the game
 import json
@@ -461,7 +433,6 @@ def arrive_in_town_from_mine(game_map, fog, player):
 
 
 def move_player(action, game_map, fog, player):
-    """Handle WASD, mining, turns/steps, and return a status dict."""
     dx = dy = 0
     if action == 'W': dy = -1
     elif action == 'S': dy = 1
@@ -482,52 +453,63 @@ def move_player(action, game_map, fog, player):
         if player['turns'] > 0:
             player['turns'] -= 1
 
-    #off-map (still costs a turn)
+    # off-map
     if not (0 <= ny < len(game_map) and 0 <= nx < len(game_map[ny])):
         print("You can't go there.")
         consume_time()
-    else:
-        tile = game_map[ny][nx]
+        return {"to_town": False, "exhausted": False, "stepped_on_town": False}
 
-        #full pack + mineral destination -> block
-        if tile in ('C','S','G') and capacity_left(player) <= 0:
-            print("You can't carry any more, so you can't go that way.")
-            consume_time()
-        else:
-            #move
-            player['x'], player['y'] = nx, ny
-            clear_fog(fog, player)
+    tile = game_map[ny][nx]
 
-            #mine (if allowed by pickaxe)
-            if tile in ('C','S','G') and can_mine(tile, player):
-                if tile == 'C': want = randint(1,5); ore = 'copper'
-                elif tile == 'S': want = randint(1,3); ore = 'silver'
-                else:             want = randint(1,2); ore = 'gold'
+    # backpack full block
+    if tile in ('C','S','G') and capacity_left(player) <= 0:
+        print("You can't carry any more, so you can't go that way.")
+        consume_time()
+        return {"to_town": False, "exhausted": False, "stepped_on_town": False}
 
-                left = max(0, capacity_left(player))
-                take = min(want, left)
-                if take > 0:
-                    player[ore] += take
-                    print("------------------------------------------------")
-                    print(f"You mined {take} piece(s) of {ore}.")
-                    if take < want:
-                        print(f"...but you can only carry {take} more piece(s)!")
+    # ✨ NEW: pickaxe too weak block — no move, lose a turn
+    if tile in ('S','G') and not can_mine(tile, player):
+        ore_name = mineral_names.get(tile, "ore")
+        print("------------------------------------------------")
+        print(f"Your pickaxe is not good enough to mine {ore_name}.")
+        consume_time()
+        return {"to_town": False, "exhausted": False, "stepped_on_town": False}
 
-            #stepped on T?
-            if tile == 'T':
-                print("You return to town.")
-                to_town = True
-                stepped_on_town = True
+    # move
+    player['x'], player['y'] = nx, ny
+    clear_fog(fog, player)
 
-            consume_time()
+    # mine (only when allowed & moved onto mineral)
+    if tile in ('C','S','G') and can_mine(tile, player):
+        if tile == 'C': want, ore = randint(1,5), 'copper'
+        elif tile == 'S': want, ore = randint(1,3), 'silver'
+        else:            want, ore = randint(1,2), 'gold'
 
-    #exhausted auto-portal
+        left = max(0, capacity_left(player))
+        take = min(want, left)
+        if take > 0:
+            player[ore] += take
+            print("------------------------------------------------")
+            print(f"You mined {take} piece(s) of {ore}.")
+            if take < want:
+                print(f"...but you can only carry {take} more piece(s)!")
+
+    # step on town tile?
+    if tile == 'T':
+        print("You return to town.")
+        to_town = True
+        stepped_on_town = True
+
+    consume_time()
+
+    # exhaustion auto-portal
     if player['turns'] == 0 and not to_town:
         print("You are exhausted.")
         print("You place your portal stone here and zap back to town.")
         player['portal_x'], player['portal_y'] = player['x'], player['y']
         exhausted = True
         to_town = True
+
     return {"to_town": to_town, "exhausted": exhausted, "stepped_on_town": stepped_on_town}
 
 
@@ -622,8 +604,10 @@ while True:
             buy_shop(player)
         elif choice_town == 'I':
             show_information(player)
+            game_state = 'town'
         elif choice_town == 'M':
             draw_map(game_map, fog, player)
+            game_state = 'town'
         elif choice_town == 'E':
             enter_mine(game_map, fog, player)   
         elif choice_town == 'V':
